@@ -1,0 +1,23 @@
+{
+  "name": "gCode Injection",
+  "version": "2016.2.16.1",
+  "manifest_version": 2,
+  "minimum_chrome_version": "31",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "icons": { "16": "assets/icon_16.png", "128": "assets/icon_128.png" },
+  "permissions": [
+    {"fileSystem": ["write", "retainEntries", "directory"]},
+    "storage"
+  ],
+  "file_handlers": {
+    "text": {
+      "types": [
+          "text/*"
+      ]
+    }
+  }
+}

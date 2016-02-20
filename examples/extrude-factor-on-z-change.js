@@ -1,4 +1,4 @@
-/* Changes extrud factor on Z change */
+/* Changes extrude factor on Z change */
 var Z_CHANGE = /G[0-1]+.*Z[0-9]+/i;
 
 function parseNumber(word) {

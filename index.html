@@ -7,18 +7,9 @@
 
 <body>
   <output></output>
-  <nav>
-    <button id="choose_file">Choose File</button>
-  </nav>
-  
-  <p><input id="gcode_prefix" placeholder="GCODE Prefix"/> [M221, M109] S</p>
-  <p><input id="gcode_postfix" placeholder="GCODE Postfix"/> ;TWEAK</p>
-  <p><input id="gcode_base_value" placeholder="Base Value"/> 100</p>
-  <p><input id="gcode_bump_value" placeholder="Bump Amount"/> 1</p>
-  <p><input id="gcode_zstart" placeholder="Z Start"/> 5</p>
-  <p><input id="gcode_zboundary" placeholder="Z Bounary Size"/> 5</p>
-  
-  <p><button id="save_file" disabled>Export</button></p>
+  <p><textarea id="gcode_expression" rows="4" cols="50">console.log(line);</textarea></p>
+  <button id="choose_file">Choose File</button>
   <script src="main.js"></script>
+  <iframe id="sandbox" src="sandbox.html" style="display:none"></iframe>
 </body>
 </html>

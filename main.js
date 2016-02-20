@@ -1,7 +1,4 @@
-var gcodeFile = null;
-
 var chooseFileButton = document.querySelector('#choose_file');
-var saveFileButton = document.querySelector('#save_file');
 var processButton = document.querySelector('#process_gcode');
 var output = document.querySelector('output');
 
@@ -50,26 +47,17 @@ chooseFileButton.addEventListener('click', function(e) {
   chrome.fileSystem.chooseEntry(
     { type: 'openFile', accepts: [{ mimeTypes: ['text/*'], extensions: ['gcode'] }]},
     function(theEntry) {
-      gcodeFile = theEntry ? theEntry : null;
-      saveFileButton.disabled = (gcodeFile === null);
+      if (theEntry) {
+        SaveFile(theEntry);
+      }
     }
   );
 });
 
-saveFileButton.addEventListener('click', function(e) {
-  var prefix = document.querySelector('#gcode_prefix').value;
-  var postfix = document.querySelector('#gcode_postfix').value;
-  var baseValue = document.querySelector('#gcode_base_value').value;
-  var bumpSize = document.querySelector('#gcode_bump_value').value;
-  var zFirstBoundary = document.querySelector('#gcode_zstart').value;
-  var zBoundarySize = document.querySelector('#gcode_zboundary').value;
-  
-  var onLoaded = function(gcode) {
-    output.textContent = 'Processing GCode';
-    gcode = processGcode(gcode, Number(zFirstBoundary), Number(zBoundarySize), function(counter) {
-      return prefix + `${Number(baseValue) + (Number(counter) * Number(bumpSize))}` + postfix;
-    });
-    
+function SaveFile(gcodeFile) {
+  var expression = document.querySelector('#gcode_expression').value;
+
+  var saveCallback = function(gcode) {
     output.textContent = 'Saving file';
     chrome.fileSystem.chooseEntry(
       {type: 'saveFile', suggestedName: gcodeFile.name},
@@ -80,6 +68,11 @@ saveFileButton.addEventListener('click', function(e) {
       });
   };
   
+  var onLoaded = function(gcode) {
+    output.textContent = 'Processing GCode';
+    processGcode(gcode, {expression: expression}, saveCallback);
+  };
+  
   output.textContent = 'Loading file';
   chrome.storage.local.set({'chosenFile': chrome.fileSystem.retainEntry(gcodeFile)});
   gcodeFile.file(function(file) {
@@ -88,33 +81,38 @@ saveFileButton.addEventListener('click', function(e) {
     reader.onload = function(e) { onLoaded(e.target.result); };
     reader.readAsText(file);
   });
-});
+}
 
-function processGcode(gcode, zBoundary, zBoundarySize, onBoundary) {
-  var counter = 0;
-  var zValue = 0;
-  var pattern = /G[0-1]+.*Z[0-9]+/i;
+var lastListener = null;
+function processGcode(gcode, context, callback) {
+  var output = [];
+  var index = 0;
   var lines = gcode.split("\n");
-  for (var line=0; line < lines.length; ++line) {
-    if (pattern.test(lines[line])) {
-      var words = lines[line].split(" ");
-      for (var word in words) {
-        if (words[word].toUpperCase().startsWith('Z')) {
-          zValue = getAxisValue(words[word]);
-          break;
-        }
-      }
-    }
-    
-    if (Number(zValue) >= Number(zBoundary)) {
-      lines[line] = lines[line] + "\n" + onBoundary(counter++, lines[line]);
-      zBoundary += zBoundarySize;
-    }
+  
+  if (lines.length === 0) {
+    callback(gcode);
+    return;
   }
   
-  return lines.join("\n");
+  if (lastListener)
+    window.removeEventListener('message', lastListener);
+  
+  window.addEventListener('message', lastListener = function(event) {
+    output[output.length] = event.data.line;
+    
+    if (++index === lines.length) {
+      callback(output.join("\n"));
+    } else {
+      sendLine(lines[index], event.data.context);
+    }
+  });
+  
+  sendLine(lines[index], context);
 }
 
-function getAxisValue(word) {
-  return Number(word.substr(1, word.length - 2));
+function sendLine(line, context) {
+  document.getElementById('sandbox').contentWindow
+    .postMessage({command: 'eval', line: line, context: context}, '*');
 }
+
+

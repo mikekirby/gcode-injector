@@ -21,7 +21,7 @@ if (Z_CHANGE.test(line)) {
     var word = words[index].toUpperCase();
     if (word.startsWith("Z")) {
       if (parseNumber(word) >= zTarget) {
-        line += "\n" + gcode;
+        line = [line, gcode];
         console.log(line);
         context.zTarget = (zTarget += Z_STEP);
         context.extrude = (extrude += EXTRUDE_STEP);

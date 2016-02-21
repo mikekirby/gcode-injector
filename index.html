@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>gcode-zchange</title>
+  <title>GCode Tools</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="codemirror.css">
+  <script src="lib/codemirror-compressed.js"></script>
+  <script src="lib/underscore-min.js"></script>
 </head>
-
 <body>
-  <output></output>
-  <p><textarea id="gcode_expression" rows="4" cols="50">console.log(line);</textarea></p>
-  <button id="choose_file">Choose File</button>
-  <script src="main.js"></script>
+  <p><output></output></p>
+  <button id="choose_file">Load Gcode</button>
+  <button id="run_script">Run Script</button>
+  <button id="save_gcode">Save Gcode</button>
   <iframe id="sandbox" src="sandbox.html" style="display:none"></iframe>
 </body>
 </html>
+<script src="main.js"></script>
